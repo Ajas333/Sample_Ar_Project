@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Debug Version</title>
+
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        model-viewer {
+            width: 100%;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        model-viewer::part(default-ar-button) {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            bottom: 80px;
+        }
+
+        #debug-log {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            color: #0f0;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 11px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10000;
+        }
+
+        .log-entry {
+            margin: 3px 0;
+            padding: 3px;
+            border-bottom: 1px solid #333;
+        }
+
+        .error {
+            color: #ff4444;
+        }
+
+        .success {
+            color: #44ff44;
+        }
+
+        .warning {
+            color: #ffaa00;
+        }
+
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            max-width: 280px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="info-panel">
+        <strong>AR Debug Mode</strong><br>
+        Check the console at the bottom for diagnostic info
+    </div>
+
+    <model-viewer id="model" src="mode_2.glb" alt="3D Model" ar ar-modes="webxr scene-viewer quick-look"
+        ar-scale="auto" camera-controls touch-action="pan-y" shadow-intensity="1" auto-rotate>
+
+        <div slot="ar-button-text">Launch AR (Debug)</div>
+    </model-viewer>
+
+    <div id="debug-log">
+        <div class="log-entry">🔍 Initializing debug mode...</div>
+    </div>
+
+    <script>
+        const modelViewer = document.querySelector('#model');
+        const debugLog = document.querySelector('#debug-log');
+
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            debugLog.appendChild(entry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+            console.log(message);
+        }
+
+        // Device info
+        log(`User Agent: ${navigator.userAgent}`, 'info');
+        log(`Platform: ${navigator.platform}`, 'info');
+        log(`HTTPS: ${location.protocol === 'https:'}`, 'info');
+
+        // Model loading
+        modelViewer.addEventListener('load', () => {
+            log('✅ Model loaded successfully', 'success');
+        });
+
+        modelViewer.addEventListener('progress', (event) => {
+            const progress = event.detail.totalProgress * 100;
+            log(`📥 Loading: ${progress.toFixed(0)}%`, 'info');
+        });
+
+        modelViewer.addEventListener('error', (event) => {
+            log(`❌ Error loading model: ${event.detail}`, 'error');
+        });
+
+        // AR status
+        modelViewer.addEventListener('ar-status', (event) => {
+            log(`AR Status: ${event.detail.status}`, event.detail.status === 'failed' ? 'error' : 'success');
+        });
+
+        // AR session start
+        modelViewer.addEventListener('ar-tracking', (event) => {
+            log(`🎯 AR Tracking: ${event.detail.status}`, 'success');
+        });
+
+        // Camera access
+        modelViewer.addEventListener('camera-change', () => {
+            log('📸 Camera changed', 'info');
+        });
+
+        // Check AR support
+        if (modelViewer.canActivateAR) {
+            log('✅ Device supports AR', 'success');
+        } else {
+            log('❌ Device does NOT support AR', 'error');
+        }
+
+        // Log when AR button is clicked
+        const observer = new MutationObserver(() => {
+            const arButton = modelViewer.shadowRoot.querySelector('[slot="ar-button"]');
+            if (arButton) {
+                arButton.addEventListener('click', () => {
+                    log('🚀 AR button clicked - Launching AR...', 'warning');
+                });
+            }
+        });
+        observer.observe(modelViewer, { childList: true, subtree: true });
+
+        // File size check
+        fetch('model_1.glb', { method: 'HEAD' })
+            .then(response => {
+                const size = parseInt(response.headers.get('content-length'));
+                const sizeMB = (size / 1024 / 1024).toFixed(2);
+                if (size > 10 * 1024 * 1024) {
+                    log(`⚠️ WARNING: Model is ${sizeMB}MB (recommended < 10MB)`, 'warning');
+                } else {
+                    log(`✅ Model size: ${sizeMB}MB`, 'success');
+                }
+            })
+            .catch(err => {
+                log(`Could not check file size: ${err}`, 'warning');
+            });
+    </script>
+</body>
+
+</html>

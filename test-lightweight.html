@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Test - Lightweight Model</title>
+
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        model-viewer {
+            width: 100%;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        model-viewer::part(default-ar-button) {
+            background-color: #FF5722;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            bottom: 20px;
+        }
+
+        .info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 300px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .info h2 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: #FF5722;
+        }
+
+        .info p {
+            margin: 5px 0;
+            font-size: 13px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="info">
+        <h2>🧪 AR Test (Lightweight)</h2>
+        <p><strong>Using Google's test model</strong></p>
+        <p>This is a tiny model (~89KB) hosted by Google</p>
+        <p>If this works, your issue is the model file size</p>
+    </div>
+
+    <model-viewer src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" alt="Astronaut Test Model" ar
+        ar-modes="webxr scene-viewer quick-look" ar-scale="auto" camera-controls touch-action="pan-y" auto-rotate
+        shadow-intensity="1">
+
+        <div slot="ar-button-text">🚀 Test AR (Lightweight Model)</div>
+    </model-viewer>
+
+    <script>
+        const modelViewer = document.querySelector('model-viewer');
+
+        modelViewer.addEventListener('load', () => {
+            console.log('✅ Test model loaded successfully');
+        });
+
+        modelViewer.addEventListener('error', (event) => {
+            console.error('❌ Error:', event);
+        });
+
+        modelViewer.addEventListener('ar-status', (event) => {
+            console.log('AR Status:', event.detail.status);
+        });
+    </script>
+</body>
+
+</html>
