@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Debug Version</title>
+    <title>AR Super Debug - Live Diagnostics</title>
 
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
@@ -12,166 +12,270 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #0f0;
         }
 
         model-viewer {
             width: 100%;
-            height: 100vh;
-            background-color: #f0f0f0;
+            height: 60vh;
+            background-color: #2a2a2a;
         }
 
         model-viewer::part(default-ar-button) {
-            background-color: #4CAF50;
-            color: white;
-            padding: 15px 30px;
-            font-size: 18px;
+            background-color: #00ff00;
+            color: #000;
+            padding: 20px 40px;
+            font-size: 20px;
+            font-weight: bold;
             border-radius: 8px;
-            bottom: 80px;
+            bottom: 220px;
         }
 
-        #debug-log {
+        #console {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(0, 0, 0, 0.9);
+            height: 40vh;
+            background: #000;
             color: #0f0;
             padding: 15px;
-            font-family: monospace;
-            font-size: 11px;
-            max-height: 200px;
             overflow-y: auto;
-            z-index: 10000;
+            font-size: 12px;
+            border-top: 3px solid #0f0;
         }
 
         .log-entry {
             margin: 3px 0;
-            padding: 3px;
-            border-bottom: 1px solid #333;
+            padding: 3px 0;
+            font-family: 'Courier New', monospace;
         }
 
-        .error {
-            color: #ff4444;
+        .timestamp {
+            color: #666;
+            margin-right: 8px;
         }
 
         .success {
-            color: #44ff44;
+            color: #00ff00;
+        }
+
+        .error {
+            color: #ff0000;
         }
 
         .warning {
             color: #ffaa00;
         }
 
-        .info-panel {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            max-width: 280px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        .info {
+            color: #00aaff;
+        }
+
+        .status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            font-size: 14px;
+            border-bottom: 2px solid #0f0;
+            z-index: 10000;
+        }
+
+        .status-item {
+            display: inline-block;
+            margin-right: 20px;
+        }
+
+        .pulse {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="info-panel">
-        <strong>AR Debug Mode</strong><br>
-        Check the console at the bottom for diagnostic info
+    <div class="status-bar">
+        <span class="status-item">📡 <span id="fileStatus">Checking file...</span></span>
+        <span class="status-item">📱 <span id="deviceStatus">Checking device...</span></span>
+        <span class="status-item">🎯 <span id="arStatus">AR: Unknown</span></span>
     </div>
 
-    <model-viewer id="model" src="mode_2.glb" alt="3D Model" ar ar-modes="webxr scene-viewer quick-look"
-        ar-scale="auto" camera-controls touch-action="pan-y" shadow-intensity="1" auto-rotate>
+    <model-viewer id="model" src="mode_2.glb" alt="AR Model" ar ar-modes="webxr scene-viewer quick-look" ar-scale="auto"
+        camera-controls touch-action="pan-y" auto-rotate shadow-intensity="1">
 
-        <div slot="ar-button-text">Launch AR (Debug)</div>
+        <div slot="ar-button-text">🚀 LAUNCH AR</div>
     </model-viewer>
 
-    <div id="debug-log">
-        <div class="log-entry">🔍 Initializing debug mode...</div>
+    <div id="console">
+        <div class="log-entry success">═══════════════════════════════════════</div>
+        <div class="log-entry success"> AR SUPER DEBUG CONSOLE v2.0</div>
+        <div class="log-entry success">═══════════════════════════════════════</div>
     </div>
 
     <script>
         const modelViewer = document.querySelector('#model');
-        const debugLog = document.querySelector('#debug-log');
+        const consoleDiv = document.querySelector('#console');
+        const fileStatus = document.querySelector('#fileStatus');
+        const deviceStatus = document.querySelector('#deviceStatus');
+        const arStatus = document.querySelector('#arStatus');
+
+        let loadStartTime = Date.now();
 
         function log(message, type = 'info') {
             const entry = document.createElement('div');
             entry.className = `log-entry ${type}`;
-            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            debugLog.appendChild(entry);
-            debugLog.scrollTop = debugLog.scrollHeight;
-            console.log(message);
+            const time = new Date().toLocaleTimeString();
+            entry.innerHTML = `<span class="timestamp">[${time}]</span>${message}`;
+            consoleDiv.appendChild(entry);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
         }
 
-        // Device info
-        log(`User Agent: ${navigator.userAgent}`, 'info');
-        log(`Platform: ${navigator.platform}`, 'info');
-        log(`HTTPS: ${location.protocol === 'https:'}`, 'info');
+        // System info
+        log('═══ SYSTEM INFO ═══', 'info');
+        log(`🌐 User Agent: ${navigator.userAgent}`, 'info');
+        log(`📱 Platform: ${navigator.platform}`, 'info');
+        log(`🔒 Protocol: ${location.protocol}`, location.protocol === 'https:' ? 'success' : 'error');
+        log(`📍 URL: ${location.href}`, 'info');
 
-        // Model loading
-        modelViewer.addEventListener('load', () => {
-            log('✅ Model loaded successfully', 'success');
-        });
-
-        modelViewer.addEventListener('progress', (event) => {
-            const progress = event.detail.totalProgress * 100;
-            log(`📥 Loading: ${progress.toFixed(0)}%`, 'info');
-        });
-
-        modelViewer.addEventListener('error', (event) => {
-            log(`❌ Error loading model: ${event.detail}`, 'error');
-        });
-
-        // AR status
-        modelViewer.addEventListener('ar-status', (event) => {
-            log(`AR Status: ${event.detail.status}`, event.detail.status === 'failed' ? 'error' : 'success');
-        });
-
-        // AR session start
-        modelViewer.addEventListener('ar-tracking', (event) => {
-            log(`🎯 AR Tracking: ${event.detail.status}`, 'success');
-        });
-
-        // Camera access
-        modelViewer.addEventListener('camera-change', () => {
-            log('📸 Camera changed', 'info');
-        });
-
-        // Check AR support
-        if (modelViewer.canActivateAR) {
-            log('✅ Device supports AR', 'success');
-        } else {
-            log('❌ Device does NOT support AR', 'error');
+        // Check if HTTPS
+        if (location.protocol !== 'https:' && !location.hostname.includes('localhost')) {
+            log('⚠️ WARNING: AR requires HTTPS in production!', 'error');
         }
 
-        // Log when AR button is clicked
-        const observer = new MutationObserver(() => {
-            const arButton = modelViewer.shadowRoot.querySelector('[slot="ar-button"]');
-            if (arButton) {
-                arButton.addEventListener('click', () => {
-                    log('🚀 AR button clicked - Launching AR...', 'warning');
-                });
-            }
-        });
-        observer.observe(modelViewer, { childList: true, subtree: true });
+        // Device detection
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isAndroid = /Android/.test(navigator.userAgent);
 
-        // File size check
-        fetch('model_1.glb', { method: 'HEAD' })
+        log(`📱 Device Type: ${isMobile ? 'Mobile' : 'Desktop'}`, isMobile ? 'success' : 'warning');
+        if (isIOS) log('🍎 iOS Device Detected', 'success');
+        if (isAndroid) log('🤖 Android Device Detected', 'success');
+
+        deviceStatus.textContent = isMobile ? (isIOS ? 'iOS' : 'Android') : 'Desktop';
+
+        // Check file
+        log('═══ FILE CHECK ═══', 'info');
+        log('🔍 Checking mode_2.glb...', 'info');
+
+        fetch('mode_2.glb', { method: 'HEAD' })
             .then(response => {
-                const size = parseInt(response.headers.get('content-length'));
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const size = parseInt(response.headers.get('content-length') || 0);
                 const sizeMB = (size / 1024 / 1024).toFixed(2);
-                if (size > 10 * 1024 * 1024) {
-                    log(`⚠️ WARNING: Model is ${sizeMB}MB (recommended < 10MB)`, 'warning');
+                log(`✅ File found: ${sizeMB}MB`, 'success');
+                fileStatus.textContent = `${sizeMB}MB ✓`;
+
+                if (size > 15 * 1024 * 1024) {
+                    log(`⚠️ File is large (${sizeMB}MB). May be slow on mobile.`, 'warning');
+                } else if (size > 10 * 1024 * 1024) {
+                    log(`⚠️ File size OK but could be smaller (${sizeMB}MB)`, 'warning');
                 } else {
-                    log(`✅ Model size: ${sizeMB}MB`, 'success');
+                    log(`✅ File size optimal (${sizeMB}MB)`, 'success');
                 }
             })
             .catch(err => {
-                log(`Could not check file size: ${err}`, 'warning');
+                log(`❌ ERROR: Cannot load mode_2.glb - ${err.message}`, 'error');
+                log(`💡 Make sure mode_2.glb is in the same folder!`, 'warning');
+                fileStatus.textContent = 'NOT FOUND ✗';
             });
+
+        // Model loading
+        log('═══ MODEL LOADING ═══', 'info');
+
+        modelViewer.addEventListener('progress', (event) => {
+            const progress = (event.detail.totalProgress * 100).toFixed(0);
+            log(`📥 Loading: ${progress}%`, 'info');
+            fileStatus.innerHTML = `Loading ${progress}% <span class="pulse">●</span>`;
+        });
+
+        modelViewer.addEventListener('load', () => {
+            const loadTime = ((Date.now() - loadStartTime) / 1000).toFixed(2);
+            log(`✅✅✅ MODEL LOADED SUCCESSFULLY in ${loadTime}s ✅✅✅`, 'success');
+            fileStatus.textContent = 'Loaded ✓';
+        });
+
+        modelViewer.addEventListener('error', (event) => {
+            log(`❌❌❌ MODEL LOAD ERROR ❌❌❌`, 'error');
+            log(`Error details: ${JSON.stringify(event.detail)}`, 'error');
+            log(`💡 Possible causes:`, 'warning');
+            log(`   1. File is corrupted`, 'warning');
+            log(`   2. File format is invalid`, 'warning');
+            log(`   3. File path is wrong`, 'warning');
+            fileStatus.textContent = 'Error ✗';
+        });
+
+        // AR functionality
+        log('═══ AR CAPABILITIES ═══', 'info');
+
+        modelViewer.addEventListener('ar-status', (event) => {
+            const status = event.detail.status;
+            log(`🎯 AR Status Changed: ${status}`, status === 'failed' ? 'error' : 'success');
+            arStatus.textContent = status.toUpperCase();
+
+            if (status === 'not-presenting') {
+                log('ℹ️ AR available but not active', 'info');
+            } else if (status === 'session-started') {
+                log('✅✅✅ AR SESSION STARTED ✅✅✅', 'success');
+            } else if (status === 'failed') {
+                log('❌❌❌ AR FAILED TO START ❌❌❌', 'error');
+                log('💡 Possible reasons:', 'warning');
+                log('   1. Model too complex for AR', 'warning');
+                log('   2. Browser AR support issue', 'warning');
+                log('   3. Camera permission denied', 'warning');
+            }
+        });
+
+        // Check if AR is supported
+        setTimeout(() => {
+            if (modelViewer.canActivateAR) {
+                log('✅ Device SUPPORTS AR!', 'success');
+                log('💡 Tap the green "LAUNCH AR" button to start', 'info');
+                arStatus.textContent = 'SUPPORTED ✓';
+            } else {
+                log('❌ Device does NOT support AR', 'error');
+                log('💡 Reasons:', 'warning');
+                log('   - Device too old (need ARCore/ARKit)', 'warning');
+                log('   - Browser doesn\'t support WebXR', 'warning');
+                arStatus.textContent = 'NOT SUPPORTED ✗';
+            }
+        }, 1000);
+
+        // Track AR button click
+        modelViewer.addEventListener('click', (e) => {
+            if (e.target.closest('[slot="ar-button"]')) {
+                log('🚀🚀🚀 AR BUTTON CLICKED 🚀🚀🚀', 'warning');
+                log('⏳ Attempting to launch AR session...', 'info');
+            }
+        });
+
+        // Camera tracking
+        modelViewer.addEventListener('camera-change', () => {
+            log('📸 Camera position changed', 'info');
+        });
+
+        log('═══════════════════════════════════════', 'success');
+        log('✅ Debug console ready!', 'success');
+        log('═══════════════════════════════════════', 'success');
     </script>
 </body>
 
