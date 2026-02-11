@@ -124,6 +124,17 @@
       transform: translateY(-2px);
     }
 
+    /* Button 4 - Simple Test */
+    .btn-simple {
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      color: white;
+    }
+
+    .btn-simple:hover {
+      box-shadow: 0 6px 20px rgba(250, 112, 154, 0.4);
+      transform: translateY(-2px);
+    }
+
     .footer {
       margin-top: 30px;
       text-align: center;
@@ -176,7 +187,6 @@
       <a href="test-lightweight.html" class="ar-button btn-test">
         <div class="button-content">
           <span class="button-title">🧪 Lightweight Test</span>
-          <span class="button-desc">Test with tiny model (89KB) - Quick loading</span>
         </div>
         <span class="button-icon">→</span>
       </a>
@@ -185,23 +195,27 @@
       <a href="index-debug.html" class="ar-button btn-debug">
         <div class="button-content">
           <span class="button-title">🔍 Debug Mode</span>
-          <span class="button-desc">Your model with diagnostic logs</span>
+          <span class="button-desc">model with diagnostic logs</span>
         </div>
         <span class="button-icon">→</span>
       </a>
 
-      <!-- Button 3: Main AR -->
+      <!-- Button 3: Simplified Test -->
+      <a href="test-simple.html" class="ar-button btn-simple">
+        <div class="button-content">
+          <span class="button-title">⚡ Simplified Test</span>
+        </div>
+        <span class="button-icon">→</span>
+      </a>
+
+      <!-- Button 4: Main AR -->
       <a href="menu.html" class="ar-button btn-main">
         <div class="button-content">
           <span class="button-title">🚀 Main AR Experience<span class="badge">LIVE</span></span>
-          <span class="button-desc">Production version (25.6MB model)</span>
+          <span class="button-desc">Production version</span>
         </div>
         <span class="button-icon">→</span>
       </a>
-    </div>
-
-    <div class="footer">
-      💡 Tip: Start with Lightweight Test to verify AR works on your device
     </div>
   </div>
 </body>
